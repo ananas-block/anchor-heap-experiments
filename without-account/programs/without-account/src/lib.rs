@@ -18,12 +18,15 @@ pub mod without_account {
     use super::*;
 
     pub fn append_leaves(ctx: Context<AppendLeaves>) -> Result<()> {
-        for i in 0..3 {
+        for i in 0..1 {
+            // sol_log_compute_units();
             #[cfg(target_os = "solana")]
             let pos = GLOBAL_ALLOCATOR.get_heap_pos();
             test_event_emmitance(&ctx);
             #[cfg(target_os = "solana")]
             GLOBAL_ALLOCATOR.free_heap(pos);
+
+            // sol_log_compute_units();
         }
         Ok(())
     }
@@ -38,24 +41,24 @@ pub fn test_event_emmitance(ctx: &Context<AppendLeaves>) -> Result<()> {
             index: i as u32,
         };
         changelog_events.push(changelog_event);
-        #[cfg(target_os = "solana")]
-        GLOBAL_ALLOCATOR.log_total_heap(format!("{}: appending changelog event", i).as_str());
+        // #[cfg(target_os = "solana")]
+        // GLOBAL_ALLOCATOR.log_total_heap(format!("{}: appending changelog event", i).as_str());
     }
     let changelogs = Changelogs {
         changelogs: changelog_events,
     };
-    #[cfg(target_os = "solana")]
-    GLOBAL_ALLOCATOR.log_total_heap("before changelogs_bytes");
+    // #[cfg(target_os = "solana")]
+    // GLOBAL_ALLOCATOR.log_total_heap("before changelogs_bytes");
 
     let mut changelogs_bytes = vec![6u8; 10240];
     let vec_changelogs = changelogs.try_to_vec()?;
-    #[cfg(target_os = "solana")]
-    GLOBAL_ALLOCATOR.log_total_heap("after emit_indexer_event");
+    // #[cfg(target_os = "solana")]
+    // GLOBAL_ALLOCATOR.log_total_heap("after emit_indexer_event");
     let mut counter = 0;
     changelogs_bytes[0..vec_changelogs.len()].copy_from_slice(&vec_changelogs);
     counter += vec_changelogs.len();
     extend(&mut changelogs_bytes, &mut counter);
-    msg!("counter: {}", counter);
+    // msg!("counter: {}", counter);
     // extend(&mut changelogs_bytes, &mut counter);
     sol_log_compute_units();
     emit_indexer_event(
@@ -77,8 +80,8 @@ pub fn extend(data: &mut Vec<u8>, counter: &mut usize) {
         // 32 (root) + 32 * HEIGHT (Merkle path) + 8 (index)
         data[*counter..*counter + 872].copy_from_slice(&PATH);
         *counter = *counter + 872usize;
-        #[cfg(target_os = "solana")]
-        GLOBAL_ALLOCATOR.log_total_heap(format!("{}: before bytes.extend_f", i).as_str());
+        // #[cfg(target_os = "solana")]
+        // GLOBAL_ALLOCATOR.log_total_heap(format!("{}: before bytes.extend_f", i).as_str());
     }
 }
 
